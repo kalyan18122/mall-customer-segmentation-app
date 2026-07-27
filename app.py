@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import LabelEncoder, StandardScaler
+import joblib
+from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
@@ -103,18 +103,34 @@ if st.button("Logout"):
     st.rerun()
 
 # -------------------------------
-# LOAD DATA
+# LOAD DATA & MODELS
 # -------------------------------
-df = pd.read_csv("Mall_Customers.csv")
-le = LabelEncoder()
-df["Gender"] = le.fit_transform(df["Gender"])
-
-X = df[["Gender", "Age", "Annual Income (k$)", "Spending Score (1-100)"]]
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-kmeans = KMeans(n_clusters=5, random_state=42)
-df["Cluster"] = kmeans.fit_predict(X_scaled)
+try:
+    # Check if required files exist
+    required_files = ["Mall_Customers.csv", "scaler.pkl", "kmeans_model.pkl"]
+    missing_files = [f for f in required_files if not os.path.exists(f)]
+    
+    if missing_files:
+        st.error(f"❌ Missing files: {', '.join(missing_files)}")
+        st.info("Run `python proj1.py` to generate these files.")
+        st.stop()
+    
+    # Load data and pre-trained models
+    df = pd.read_csv("Mall_Customers.csv")
+    le = LabelEncoder()
+    df["Gender"] = le.fit_transform(df["Gender"])
+    
+    # Load pre-trained models
+    scaler = joblib.load('scaler.pkl')
+    kmeans = joblib.load('kmeans_model.pkl')
+    
+    X = df[["Gender", "Age", "Annual Income (k$)", "Spending Score (1-100)"]]
+    X_scaled = scaler.transform(X)  # Use transform, NOT fit_transform
+    df["Cluster"] = kmeans.predict(X_scaled)  # Use predict, NOT fit_predict
+    
+except Exception as e:
+    st.error(f"Error loading model: {str(e)}")
+    st.stop()
 
 # -------------------------------
 # SIDEBAR NAVIGATION
