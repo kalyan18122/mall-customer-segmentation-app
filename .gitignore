@@ -1,0 +1,6 @@
+users.csv
+history.csv
+*.pkl
+__pycache__/
+.streamlit/
+.DS_Store
