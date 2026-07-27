@@ -19,7 +19,7 @@ matplotlib.use("Agg")
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, davies_bouldin_score
 from PIL import Image
@@ -41,7 +41,9 @@ print(data.describe())
 # ---------------------------
 # Feature selection & scaling
 # ---------------------------
-X = data[['Age', 'Annual Income (k$)', 'Spending Score (1-100)']]
+le = LabelEncoder()
+data['Gender'] = le.fit_transform(data['Gender'])
+X = data[['Gender', 'Age', 'Annual Income (k$)', 'Spending Score (1-100)']]
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)   # <-- Fit scaler here
 
@@ -186,12 +188,12 @@ print(profile)
 # ---------------------------
 def assign_segment(new_data, training_data=data):
     """
-    new_data: pandas DataFrame with columns ['Age', 'Annual Income (k$)', 'Spending Score (1-100)']
+    new_data: pandas DataFrame with columns ['Gender', 'Age', 'Annual Income (k$)', 'Spending Score (1-100)']
     training_data: original dataset to compute median values for NA filling
     Returns: list of segment names
     """
     # Fill missing values with median from training data
-    for col in ['Age', 'Annual Income (k$)', 'Spending Score (1-100)']:
+    for col in ['Gender', 'Age', 'Annual Income (k$)', 'Spending Score (1-100)']:
         if col in new_data.columns:
             new_data[col] = new_data[col].fillna(training_data[col].median())
         else:
@@ -212,7 +214,7 @@ def assign_segment(new_data, training_data=data):
     }
     
     # Scale and predict
-    X_scaled_new = scaler.transform(new_data[['Age', 'Annual Income (k$)', 'Spending Score (1-100)']])
+    X_scaled_new = scaler.transform(new_data[['Gender', 'Age', 'Annual Income (k$)', 'Spending Score (1-100)']])
     clusters_new = kmeans.predict(X_scaled_new)
     
     return [segment_names_map[c] for c in clusters_new]
@@ -221,9 +223,10 @@ def assign_segment(new_data, training_data=data):
 # Example usage with missing values
 # ---------------------------
 new_customers = pd.DataFrame({
-    'Age': [25, None],                     # Second row missing Age
-    'Annual Income (k$)': [50, 80],        # No missing here
-    'Spending Score (1-100)': [90, None]   # Second row missing Spending Score
+    'Gender': [1, 0],                          # 1=Male, 0=Female
+    'Age': [25, None],                         # Second row missing Age
+    'Annual Income (k$)': [50, 80],            # No missing here
+    'Spending Score (1-100)': [90, None]       # Second row missing Spending Score
 })
 segments = assign_segment(new_customers)
 print("Assigned segments for new customers:", segments)
