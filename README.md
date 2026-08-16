@@ -4,7 +4,7 @@ A Streamlit app that clusters mall customers by age, income, and spending
 score using KMeans, then lets you predict which segment a new customer
 falls into and offers a matching discount.
 
-**🔴 Live app:** [Launch here](PASTE_YOUR_STREAMLIT_URL_HERE)
+**Live app:** [Launch here](https://mall-customer-segmentation-app-j4kp4nluptp6jrpg6rlipg.streamlit.app/)
 
 ---
 
